@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSN Messenger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0d3b5e 0%, #1a5d9c 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .msn-window {
+            width: 400px;
+            height: 580px;
+            background: #f0f2f5;
+            border-radius: 10px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .msn-titlebar {
+            background: linear-gradient(135deg, #1976d2, #0d47a1);
+            color: white;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .title-dots span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 2px;
+            margin-right: 3px;
+        }
+
+        .screen {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            background: white;
+            overflow: hidden;
+        }
+        .screen.active {
+            display: flex;
+        }
+
+        /* شاشة الدخول */
+        .login-container {
+            padding: 20px 24px 10px 24px;
+            text-align: center;
+            background: white;
+            height: 100%;
+            overflow-y: auto;
+        }
+        .login-container h2 {
+            color: #0d47a1;
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+        .login-container p {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 18px;
+        }
+        .input-field {
+            margin-bottom: 12px;
+            text-align: right;
+        }
+        .input-field label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 4px;
+            color: #555;
+        }
+        .input-field input {
+            width: 100%;
+            padding: 9px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 9px;
+            background: linear-gradient(135deg, #43a047, #2e7d32);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+        .message-area {
+            margin-top: 10px;
+            font-size: 12px;
+            min-height: 30px;
+        }
+        .switch-link {
+            font-size: 12px;
+            margin-top: 8px;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .switch-link a {
+            color: #0d47a1;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* شاشة التسجيل */
+        .signup-container {
+            padding: 25px 24px;
+            text-align: center;
+            background: white;
+            height: 100%;
+            overflow-y: auto;
+        }
+        .signup-container h2 {
+            color: #0d47a1;
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+        .signup-container p {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+        .signup-container .input-field {
+            margin-bottom: 14px;
+        }
+        .signup-container .input-field input {
+            padding: 10px;
+        }
+        .signup-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #43a047, #2e7d32);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .username-display {
+            background: #e8f0fe;
+            border: 2px dashed #1976d2;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #0d47a1;
+            margin: 14px 0;
+        }
+
+        /* شاشة جهات الاتصال */
+        .user-bar {
+            background: white;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #43a047, #2e7d32);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-details { flex: 1; }
+        .user-details .name { font-weight: bold; color: #0d47a1; font-size: 14px; }
+        .user-details .account {
+            font-size: 10px;
+            background: #f0f2f5;
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 3px;
+            cursor: pointer;
+        }
+        .status-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+        .status-row span { font-size: 11px; color: #555; }
+        .status-select {
+            background: #f0f2f5;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 3px 8px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .logout-btn {
+            background: none;
+            border: none;
+            color: #d32f2f;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 5px 8px;
+        }
+        .friends-header {
+            background: #e8f0fe;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #0d47a1;
+            border-bottom: 1px solid #ccc;
+        }
+        .add-btn {
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .friends-list { flex: 1; overflow-y: auto; }
+        .friend-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            gap: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.1s;
+        }
+        .friend-item:hover { background: #e8f0fe; }
+        .friend-item .avatar { width: 38px; height: 38px; font-size: 15px; }
+        .friend-info { flex: 1; }
+        .friend-name { font-weight: 600; font-size: 13px; }
+        .friend-lastmsg {
+            font-size: 10px;
+            color: #888;
+            margin-top: 2px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .unread-badge {
+            background: #d32f2f;
+            color: white;
+            border-radius: 30px;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: bold;
+            min-width: 22px;
+            text-align: center;
+        }
+        .friend-status-icon { font-size: 14px; margin-right: 5px; }
+        .empty-hint { text-align: center; color: #aaa; padding: 30px; font-size: 12px; }
+
+        /* شاشة المحادثة */
+        .chat-header {
+            background: white;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #0d47a1;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chat-user { flex: 1; }
+        .chat-user .name { font-weight: bold; color: #0d47a1; font-size: 14px; }
+        .chat-user .typing { font-size: 10px; color: #43a047; font-style: italic; min-height: 15px; }
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: #f5f7fa;
+        }
+        .message-row { display: flex; }
+        .message-row.me { justify-content: flex-start; }
+        .message-row.other { justify-content: flex-end; }
+        .message-bubble {
+            max-width: 75%;
+            padding: 8px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+        }
+        .message-row.me .message-bubble {
+            background: #dcf2c1;
+            border-bottom-left-radius: 3px;
+        }
+        .message-row.other .message-bubble {
+            background: white;
+            border: 1px solid #ddd;
+            border-bottom-right-radius: 3px;
+        }
+        .message-image {
+            max-width: 180px;
+            max-height: 180px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .message-time { font-size: 8px; color: #999; margin-top: 3px; text-align: left; }
+        .input-area {
+            background: white;
+            padding: 10px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            background: #f5f7fa;
+            border-radius: 25px;
+            border: 1px solid #ddd;
+            overflow: hidden;
+        }
+        .message-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            font-size: 12px;
+            outline: none;
+        }
+        .icon-button {
+            background: none;
+            border: none;
+            padding: 0 10px;
+            font-size: 18px;
+            cursor: pointer;
+            color: #666;
+            display: flex;
+            align-items: center;
+        }
+        .send-button {
+            background: linear-gradient(135deg, #43a047, #2e7d32);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 8px 18px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .uploading-text { text-align: center; font-size: 10px; color: #888; padding: 3px; background: #f5f7fa; }
+
+        /* الإيموجي */
+        .emoji-panel {
+            position: absolute;
+            bottom: 70px;
+            left: 10px;
+            background: white;
+            border-radius: 14px;
+            padding: 10px;
+            width: 260px;
+            display: none;
+            flex-wrap: wrap;
+            gap: 6px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+        .emoji-panel span { font-size: 22px; cursor: pointer; padding: 3px; }
+
+        /* مودالات */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+        .modal-box {
+            background: white;
+            border-radius: 14px;
+            width: 270px;
+            padding: 20px;
+            text-align: center;
+        }
+        .modal-box h3 { color: #0d47a1; margin-bottom: 14px; font-size: 16px; }
+        .modal-box input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-bottom: 14px;
+        }
+        .modal-buttons { display: flex; gap: 8px; }
+        .modal-buttons button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .modal-confirm { background: #43a047; color: white; }
+        .modal-cancel { background: #e0e0e0; color: #333; }
+        .modal-message { font-size: 11px; margin-top: 10px; }
+        .toast-message {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0d47a1;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 25px;
+            font-size: 11px;
+            display: none;
+            z-index: 300;
+        }
+    </style>
+</head>
+<body>
+
+<div class="msn-window">
+    <div class="msn-titlebar">
+        <span id="windowTitle">MSN Messenger</span>
+        <span class="title-dots"><span></span><span></span><span></span></span>
+    </div>
+
+    <!-- شاشة الدخول -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <h2>تسجيل الدخول</h2>
+            <p>أدخل بياناتك للدخول إلى المحادثة</p>
+            <div class="input-field">
+                <label>اسم المستخدم</label>
+                <input type="text" id="loginUser" placeholder="أدخل اسم المستخدم">
+            </div>
+            <div class="input-field">
+                <label>كلمة المرور</label>
+                <input type="password" id="loginPass" placeholder="أدخل كلمة المرور">
+            </div>
+            <button class="login-btn" id="loginButton">دخول</button>
+            <div id="loginMessage" class="message-area"></div>
+            <div class="switch-link">ليس لديك حساب؟ <a href="#" onclick="showSignupScreen()">سجل الآن</a></div>
+        </div>
+    </div>
+
+    <!-- شاشة التسجيل -->
+    <div id="signupScreen" class="screen">
+        <div class="signup-container">
+            <h2>حساب جديد</h2>
+            <p>اختر اسم مستخدم، وسيتم إعطاؤك رقم حساب تلقائياً</p>
+            <div class="input-field">
+                <label>اسم المستخدم</label>
+                <input type="text" id="signupUsername" placeholder="مثال: mohamed">
+            </div>
+            <div class="input-field">
+                <label>اسمك الظاهر</label>
+                <input type="text" id="signupDisplayName" placeholder="مثال: محمد">
+            </div>
+            <div class="input-field">
+                <label>رقم الهاتف</label>
+                <input type="tel" id="signupPhone" placeholder="01xxxxxxxxx">
+            </div>
+            <div class="input-field">
+                <label>كلمة المرور</label>
+                <input type="password" id="signupPassword" placeholder="اختر كلمة مرور">
+            </div>
+            <button class="signup-btn" id="signupButton">إنشاء الحساب</button>
+            <div id="signupMessage" class="message-area"></div>
+            <div class="switch-link">لديك حساب بالفعل؟ <a href="#" onclick="showLoginScreen()">سجل الدخول</a></div>
+        </div>
+    </div>
+
+    <!-- شاشة نجاح التسجيل -->
+    <div id="signupSuccessScreen" class="screen">
+        <div class="login-container">
+            <h2>🎉 تم التسجيل بنجاح!</h2>
+            <p>هذا رقم حسابك، شاركه مع أصدقائك ليضيفوك</p>
+            <div class="username-display" id="newAccountDisplay">msn1</div>
+            <p style="font-size: 12px;">اسم المستخدم: <b id="newUsernameDisplay">-</b></p>
+            <p style="color: #d32f2f; font-weight: bold;">حسابك قيد المراجعة، انتظر التفعيل</p>
+            <button class="login-btn" onclick="showLoginScreen()">رجوع لتسجيل الدخول</button>
+        </div>
+    </div>
+
+    <!-- شاشة جهات الاتصال -->
+    <div id="contactsScreen" class="screen">
+        <div class="user-bar">
+            <div class="avatar" id="myAvatar" onclick="openAvatarModal()">?</div>
+            <div class="user-details">
+                <div class="name" id="myName">-</div>
+                <div class="account" id="myAccount" onclick="copyAccountId()">رقم الحساب: -</div>
+                <div class="status-row">
+                    <span id="statusLabel">🟢 الحالة:</span>
+                    <select id="statusSelect" class="status-select" onchange="updateMyStatus()">
+                        <option value="online">🟢 متصل</option>
+                        <option value="busy">🔴 مشغول</option>
+                        <option value="offline">⚫ غير متصل</option>
+                    </select>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">خروج</button>
+        </div>
+        <div class="friends-header">
+            <span>📞 جهات الاتصال</span>
+            <button class="add-btn" onclick="openAddFriendModal()">+ إضافة صديق</button>
+        </div>
+        <div class="friends-list" id="friendsList"></div>
+    </div>
+
+    <!-- شاشة المحادثة -->
+    <div id="chatScreen" class="screen">
+        <div class="chat-header">
+            <button class="back-btn" onclick="backToContacts()">←</button>
+            <div class="chat-user">
+                <div class="name" id="chatName">-</div>
+                <div class="typing" id="typingIndicator"></div>
+            </div>
+        </div>
+        <div class="messages-area" id="messagesArea"></div>
+        <div class="uploading-text" id="uploadingIndicator" style="display:none;">📤 جاري رفع الصورة...</div>
+        <div class="input-area">
+            <div class="input-wrapper">
+                <input type="text" id="messageInput" class="message-input" placeholder="اكتب رسالتك..." onkeypress="handleEnterKey(event)" onkeyup="handleStopTyping()">
+                <button class="icon-button" onclick="toggleEmojiPanel()">😊</button>
+                <button class="icon-button" onclick="document.getElementById('imageUpload').click()">📷</button>
+            </div>
+            <button class="send-button" onclick="sendMessage()">إرسال</button>
+            <input type="file" id="imageUpload" accept="image/*" style="display:none;" onchange="sendImageMessage(event)">
+        </div>
+        <div class="emoji-panel" id="emojiPanel"></div>
+    </div>
+</div>
+
+<!-- مودال إضافة صديق -->
+<div id="addFriendModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>➕ إضافة صديق</h3>
+        <input type="text" id="friendAccountInput" placeholder="رقم حساب الصديق (مثال: msn1)">
+        <div class="modal-buttons">
+            <button class="modal-confirm" onclick="confirmAddFriend()">إضافة</button>
+            <button class="modal-cancel" onclick="closeModal('addFriendModal')">إلغاء</button>
+        </div>
+        <div id="addFriendMessage" class="modal-message"></div>
+    </div>
+</div>
+
+<!-- مودال تغيير الصورة -->
+<div id="avatarModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>🖼️ تغيير الصورة الشخصية</h3>
+        <input type="file" id="avatarUpload" accept="image/*">
+        <div class="modal-buttons">
+            <button class="modal-confirm" onclick="uploadAvatar()">رفع</button>
+            <button class="modal-cancel" onclick="closeModal('avatarModal')">إلغاء</button>
+        </div>
+        <div id="avatarMessage" class="modal-message"></div>
+    </div>
+</div>
+
+<!-- مودال معاينة الصورة -->
+<div id="previewModal" class="modal-overlay" onclick="closeModal('previewModal')">
+    <img id="previewImage" style="max-width:90%; max-height:90%; border-radius:12px;">
+</div>
+
+<div id="toastMessage" class="toast-message"></div>
+
+<script>
+    // ===================== الإعدادات =====================
+    const API_URL = "https://script.google.com/macros/s/AKfycbyCqLw-rvQkRNhmG2YIc9nU4X1BVPc8mPrs3JzM2VHebhXGXsW2eK9JSnYOKIOhvIIU/exec";
+    const IMGBB_KEY = "70da390a22af7d2bb175bb823a671cd4";
+
+    let currentUser = null;
+    let currentChat = null;
+    let messageInterval = null;
+    let friendsInterval = null;
+    let lastMsgTime = 0;
+    let displayedMsgs = new Set();
+    let typingTimeoutVar = null;
+    let isUserTyping = false;
+    let lastTypingSend = 0;
+    let isSending = false;
+
+    let unreadCounts = {};
+    let lastMessages = {};
+    
+    // طلب إذن الإشعارات
+    let notificationPermission = false;
+    
+    function requestNotificationPermission() {
+        if ("Notification" in window) {
+            Notification.requestPermission().then(function(permission) {
+                if (permission === "granted") {
+                    notificationPermission = true;
+                    console.log("✅ تم تفعيل الإشعارات");
+                }
+            });
+        }
+    }
+    
+    function sendNotification(title, body, tag) {
+        if (notificationPermission && document.hidden) {
+            // show notification only if window is not focused
+            new Notification(title, {
+                body: body,
+                icon: "https://cdn-icons-png.flaticon.com/512/5968/5968763.png",
+                tag: tag,
+                silent: false
+            });
+        }
+    }
+
+    const emojiList = ['😀','😁','😂','🤣','😃','😄','😅','😆','😉','😊','😋','😎','😍','😘','🥰','😗','😙','😚','🙂','🤗','🤩','🤔','🤨','😐','😑','😶','🙄','😏','😣','😥','😮','🤐','😯','😪','😫','😴','😌','😛','😜','😝','🤤','😒','😓','😔','😕','🙃','🫠','😲','❤️','💔','🔥','🎉','👍','👎'];
+
+    function showToast(msg) {
+        const toast = document.getElementById('toastMessage');
+        toast.textContent = msg;
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 2000);
+    }
+
+    function escapeText(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    async function callApi(params) {
+        const url = new URL(API_URL);
+        Object.keys(params).forEach(k => url.searchParams.append(k, params[k]));
+        const response = await fetch(url);
+        return response.json();
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    function openModal(id) {
+        document.getElementById(id).style.display = 'flex';
+    }
+
+    function copyAccountId() {
+        if (currentUser && currentUser.accountId) {
+            navigator.clipboard.writeText(currentUser.accountId);
+            showToast('📋 تم نسخ رقم الحساب: ' + currentUser.accountId);
+        }
+    }
+
+    function getStatusIcon(status) {
+        if (status === 'online') return '🟢';
+        if (status === 'busy') return '🔴';
+        return '⚫';
+    }
+
+    function updateStatusIcon() {
+        const status = document.getElementById('statusSelect').value;
+        const icon = getStatusIcon(status);
+        document.getElementById('statusLabel').innerHTML = icon + ' الحالة:';
+    }
+
+    function showLoginScreen() {
+        document.getElementById('loginScreen').classList.add('active');
+        document.getElementById('signupScreen').classList.remove('active');
+        document.getElementById('signupSuccessScreen').classList.remove('active');
+        document.getElementById('contactsScreen').classList.remove('active');
+        document.getElementById('chatScreen').classList.remove('active');
+        document.getElementById('windowTitle').innerHTML = 'MSN Messenger';
+    }
+
+    function showSignupScreen() {
+        document.getElementById('loginScreen').classList.remove('active');
+        document.getElementById('signupScreen').classList.add('active');
+        document.getElementById('signupSuccessScreen').classList.remove('active');
+        document.getElementById('contactsScreen').classList.remove('active');
+        document.getElementById('chatScreen').classList.remove('active');
+        document.getElementById('windowTitle').innerHTML = 'MSN Messenger - تسجيل جديد';
+        document.getElementById('signupUsername').value = '';
+        document.getElementById('signupDisplayName').value = '';
+        document.getElementById('signupPhone').value = '';
+        document.getElementById('signupPassword').value = '';
+        document.getElementById('signupMessage').innerHTML = '';
+    }
+
+    async function doLogin() {
+        const username = document.getElementById('loginUser').value.trim();
+        const password = document.getElementById('loginPass').value.trim();
+        const msgDiv = document.getElementById('loginMessage');
+
+        if (!username || !password) {
+            msgDiv.innerHTML = '<span style="color:#d32f2f;">❌ يرجى إدخال جميع البيانات</span>';
+            return;
+        }
+
+        msgDiv.innerHTML = '<span style="color:#0d47a1;">⏳ جاري الاتصال...</span>';
+
+        try {
+            const res = await callApi({ action: 'login', username, password });
+            if (res.success) {
+                currentUser = {
+                    username: res.username,
+                    displayName: res.displayName,
+                    avatarUrl: res.avatarUrl || '',
+                    accountId: res.accountId || '',
+                    status: res.status || 'online'
+                };
+                sessionStorage.setItem('msn_user', JSON.stringify(currentUser));
+                msgDiv.innerHTML = '<span style="color:#2e7d32;">✅ تم الدخول بنجاح</span>';
+                requestNotificationPermission(); // طلب إذن الإشعارات
+                showContactsScreen();
+            } else {
+                msgDiv.innerHTML = '<span style="color:#d32f2f;">❌ ' + (res.error || 'بيانات غير صحيحة') + '</span>';
+            }
+        } catch(e) {
+            msgDiv.innerHTML = '<span style="color:#d32f2f;">❌ خطأ في الاتصال</span>';
+        }
+    }
+
+    async function doSignup() {
+        const username = document.getElementById('signupUsername').value.trim();
+        const displayName = document.getElementById('signupDisplayName').value.trim();
+        const phone = document.getElementById('signupPhone').value.trim();
+        const password = document.getElementById('signupPassword').value.trim();
+        const msgDiv = document.getElementById('signupMessage');
+
+        if (!username || !displayName || !phone || !password) {
+            msgDiv.innerHTML = '<span style="color:#d32f2f;">❌ يرجى إدخال جميع البيانات</span>';
+            return;
+        }
+
+        msgDiv.innerHTML = '<span style="color:#0d47a1;">⏳ جاري إنشاء الحساب...</span>';
+
+        try {
+            const res = await callApi({ action: 'register', username, password, displayName, phone });
+            if (res.success) {
+                document.getElementById('signupScreen').classList.remove('active');
+                document.getElementById('signupSuccessScreen').classList.add('active');
+                document.getElementById('newAccountDisplay').innerHTML = res.accountId;
+                document.getElementById('newUsernameDisplay').innerHTML = res.username;
+                document.getElementById('windowTitle').innerHTML = 'MSN Messenger - تهانينا';
+            } else {
+                msgDiv.innerHTML = '<span style="color:#d32f2f;">❌ ' + (res.error || 'حدث خطأ') + '</span>';
+            }
+        } catch(e) {
+            msgDiv.innerHTML = '<span style="color:#d32f2f;">❌ خطأ في الاتصال</span>';
+        }
+    }
+
+    async function showContactsScreen() {
+        if (!currentUser) return;
+
+        document.getElementById('loginScreen').classList.remove('active');
+        document.getElementById('signupScreen').classList.remove('active');
+        document.getElementById('signupSuccessScreen').classList.remove('active');
+        document.getElementById('contactsScreen').classList.add('active');
+        document.getElementById('chatScreen').classList.remove('active');
+        document.getElementById('windowTitle').innerHTML = `MSN - ${currentUser.displayName}`;
+
+        document.getElementById('myName').innerHTML = currentUser.displayName;
+        document.getElementById('myAccount').innerHTML = `📋 رقم الحساب: ${currentUser.accountId || '-'}`;
+        document.getElementById('statusSelect').value = currentUser.status;
+        updateStatusIcon();
+
+        const avatarEl = document.getElementById('myAvatar');
+        if (currentUser.avatarUrl && currentUser.avatarUrl.startsWith('http')) {
+            avatarEl.innerHTML = `<img src="${currentUser.avatarUrl}">`;
+        } else {
+            avatarEl.innerHTML = currentUser.displayName.charAt(0);
+        }
+
+        await loadFriendsList();
+        startFriendsPolling();
+    }
+
+    async function loadFriendsList() {
+        const listEl = document.getElementById('friendsList');
+
+        try {
+            const res = await callApi({ action: 'getFriends', owner: currentUser.username });
+            if (res.success && res.friends.length > 0) {
+                listEl.innerHTML = '';
+                for (let friend of res.friends) {
+                    const lastMsg = lastMessages[friend.username] || '';
+                    const unread = unreadCounts[friend.username] || 0;
+                    
+                    const item = document.createElement('div');
+                    item.className = 'friend-item';
+                    item.onclick = () => openChatWith(friend);
+
+                    const avatarDiv = document.createElement('div');
+                    avatarDiv.className = 'avatar';
+                    if (friend.avatarUrl && friend.avatarUrl.startsWith('http')) {
+                        avatarDiv.innerHTML = `<img src="${friend.avatarUrl}">`;
+                    } else {
+                        avatarDiv.innerHTML = friend.displayName.charAt(0);
+                    }
+
+                    const infoDiv = document.createElement('div');
+                    infoDiv.className = 'friend-info';
+                    infoDiv.innerHTML = `
+                        <div class="friend-name">${escapeText(friend.displayName)}</div>
+                        <div class="friend-lastmsg">
+                            <span>${escapeText(lastMsg.length > 35 ? lastMsg.substring(0, 35) + '...' : lastMsg)}</span>
+                        </div>
+                    `;
+                    
+                    if (unread > 0) {
+                        const unreadSpan = document.createElement('span');
+                        unreadSpan.className = 'unread-badge';
+                        unreadSpan.textContent = unread;
+                        infoDiv.querySelector('.friend-lastmsg').appendChild(unreadSpan);
+                    }
+
+                    const statusIcon = getStatusIcon(friend.status || 'offline');
+                    const statusDiv = document.createElement('div');
+                    statusDiv.className = 'friend-status-icon';
+                    statusDiv.innerHTML = statusIcon;
+
+                    item.appendChild(avatarDiv);
+                    item.appendChild(infoDiv);
+                    item.appendChild(statusDiv);
+                    listEl.appendChild(item);
+                }
+            } else {
+                listEl.innerHTML = '<div class="empty-hint">👋 لا يوجد أصدقاء بعد<br>➕ اضغط "إضافة صديق"</div>';
+            }
+        } catch(e) {
+            console.error(e);
+            listEl.innerHTML = '<div class="empty-hint">⚠️ خطأ في التحميل</div>';
+        }
+    }
+
+    function startFriendsPolling() {
+        if (friendsInterval) clearInterval(friendsInterval);
+        friendsInterval = setInterval(async () => {
+            if (!currentUser || document.getElementById('chatScreen').classList.contains('active')) return;
+            try {
+                const res = await callApi({ action: 'getFriendsWithUpdates', owner: currentUser.username, lastTimestamp: lastMsgTime });
+                if (res.success && res.updates) {
+                    let hasUpdates = false;
+                    for (let f of res.updates) {
+                        if (f.lastMessage && f.lastMessage !== lastMessages[f.username]) {
+                            lastMessages[f.username] = f.lastMessage;
+                            hasUpdates = true;
+                            // إشعار للرسائل الجديدة
+                            if (f.unreadCount > 0 && f.lastMessage) {
+                                const friend = res.friends?.find(x => x.username === f.username);
+                                const friendName = friend?.displayName || f.username;
+                                sendNotification(`📩 رسالة جديدة من ${friendName}`, f.lastMessage, f.username);
+                            }
+                        }
+                        if (f.unreadCount !== undefined) {
+                            unreadCounts[f.username] = f.unreadCount;
+                        }
+                    }
+                    if (hasUpdates) {
+                        await loadFriendsList();
+                    }
+                }
+            } catch(e) {
+                console.error("Polling error:", e);
+            }
+        }, 4000);
+    }
+
+    async function openChatWith(user) {
+        if (currentChat && currentChat.username === user.username) return;
+        currentChat = user;
+        if (unreadCounts[user.username]) {
+            unreadCounts[user.username] = 0;
+            await loadFriendsList();
+        }
+        lastMsgTime = 0;
+        displayedMsgs.clear();
+
+        document.getElementById('contactsScreen').classList.remove('active');
+        document.getElementById('chatScreen').classList.add('active');
+        document.getElementById('windowTitle').innerHTML = `💬 محادثة مع ${user.displayName}`;
+        document.getElementById('chatName').innerHTML = user.displayName;
+        document.getElementById('messagesArea').innerHTML = '';
+        document.getElementById('typingIndicator').innerHTML = '';
+
+        await loadMessages(true);
+        startMessagePolling();
+    }
+
+    function backToContacts() {
+        if (messageInterval) clearInterval(messageInterval);
+        currentChat = null;
+        document.getElementById('chatScreen').classList.remove('active');
+        document.getElementById('contactsScreen').classList.add('active');
+        document.getElementById('windowTitle').innerHTML = `MSN - ${currentUser.displayName}`;
+        loadFriendsList();
+    }
+
+    async function loadMessages(scrollToBottom) {
+        if (!currentChat) return;
+        try {
+            const res = await callApi({
+                action: 'getMessages',
+                user1: currentUser.username,
+                user2: currentChat.username,
+                after: lastMsgTime
+            });
+            if (res.success && res.messages.length > 0) {
+                const area = document.getElementById('messagesArea');
+                for (let msg of res.messages) {
+                    const msgId = String(msg.id);
+                    if (displayedMsgs.has(msgId)) continue;
+                    displayedMsgs.add(msgId);
+                    if (msg.timestamp > lastMsgTime) lastMsgTime = msg.timestamp;
+
+                    const isMe = msg.from === currentUser.username;
+                    const row = document.createElement('div');
+                    row.className = `message-row ${isMe ? 'me' : 'other'}`;
+                    const msgTime = new Date(msg.timestamp);
+                    const timeStr = msgTime.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+
+                    if (msg.type === 'image') {
+                        row.innerHTML = `<div class="message-bubble"><img src="${msg.message}" class="message-image" onclick="previewImage('${msg.message}')"><div class="message-time">${timeStr}</div></div>`;
+                    } else {
+                        row.innerHTML = `<div class="message-bubble">${escapeText(msg.message)}<div class="message-time">${timeStr}</div></div>`;
+                    }
+                    area.appendChild(row);
+                }
+                if (scrollToBottom) area.scrollTop = area.scrollHeight;
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const text = input.value.trim();
+        if (!text || !currentChat || isSending) return;
+
+        isSending = true;
+        input.value = '';
+
+        const tempId = 'temp_' + Date.now();
+        const tempMsg = {
+            id: tempId,
+            from: currentUser.username,
+            to: currentChat.username,
+            message: text,
+            timestamp: Date.now(),
+            type: 'text'
+        };
+        displayedMsgs.add(tempId);
+        
+        const area = document.getElementById('messagesArea');
+        const row = document.createElement('div');
+        row.className = 'message-row me';
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        row.innerHTML = `<div class="message-bubble">${escapeText(text)}<div class="message-time">${timeStr}</div></div>`;
+        area.appendChild(row);
+        area.scrollTop = area.scrollHeight;
+
+        try {
+            const res = await callApi({
+                action: 'sendMessage',
+                from: currentUser.username,
+                to: currentChat.username,
+                message: text,
+                type: 'text'
+            });
+            if (res.success && res.timestamp > lastMsgTime) {
+                lastMsgTime = res.timestamp;
+                if (res.id && !displayedMsgs.has(String(res.id))) {
+                    displayedMsgs.add(String(res.id));
+                }
+            }
+        } catch(e) { console.error(e); }
+        setTimeout(() => { isSending = false; }, 500);
+    }
+
+    async function sendTyping(isTypingNow) {
+        if (!currentChat) return;
+        const now = Date.now();
+        if (now - lastTypingSend < 1500) return;
+        lastTypingSend = now;
+        await callApi({ action: 'typing', from: currentUser.username, to: currentChat.username, typing: isTypingNow });
+    }
+
+    function handleTypingStart() {
+        if (!currentChat) return;
+        if (!isUserTyping) {
+            isUserTyping = true;
+            sendTyping(true);
+        }
+        if (typingTimeoutVar) clearTimeout(typingTimeoutVar);
+        typingTimeoutVar = setTimeout(() => {
+            isUserTyping = false;
+            sendTyping(false);
+        }, 2000);
+    }
+
+    function handleStopTyping() {
+        if (typingTimeoutVar) clearTimeout(typingTimeoutVar);
+        if (isUserTyping) {
+            isUserTyping = false;
+            sendTyping(false);
+        }
+    }
+
+    function startMessagePolling() {
+        if (messageInterval) clearInterval(messageInterval);
+        messageInterval = setInterval(async () => {
+            if (!currentChat) return;
+            await loadMessages(false);
+            try {
+                const res = await callApi({ action: 'getTyping', from: currentUser.username, to: currentChat.username });
+                document.getElementById('typingIndicator').innerHTML = res?.isTyping ? '✍️ جاري الكتابة...' : '';
+            } catch(e) {}
+        }, 1500);
+    }
+
+    async function uploadToImgBB(file) {
+        const fd = new FormData();
+        fd.append('image', file);
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) return data.data.url;
+        throw new Error('فشل الرفع');
+    }
+
+    async function sendImageMessage(event) {
+        const file = event.target.files[0];
+        if (!file || !currentChat) return;
+        const indicator = document.getElementById('uploadingIndicator');
+        indicator.style.display = 'block';
+        try {
+            const url = await uploadToImgBB(file);
+            const res = await callApi({
+                action: 'sendMessage',
+                from: currentUser.username,
+                to: currentChat.username,
+                message: url,
+                type: 'image'
+            });
+            const msgId = res.id || Date.now();
+            if (!displayedMsgs.has(String(msgId))) {
+                displayedMsgs.add(String(msgId));
+                const area = document.getElementById('messagesArea');
+                const row = document.createElement('div');
+                row.className = 'message-row me';
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+                row.innerHTML = `<div class="message-bubble"><img src="${url}" class="message-image" onclick="previewImage('${url}')"><div class="message-time">${timeStr}</div></div>`;
+                area.appendChild(row);
+                area.scrollTop = area.scrollHeight;
+            }
+            if (res.timestamp > lastMsgTime) lastMsgTime = res.timestamp;
+        } catch(e) { showToast('❌ فشل رفع الصورة'); }
+        indicator.style.display = 'none';
+        event.target.value = '';
+    }
+
+    async function uploadAvatar() {
+        const file = document.getElementById('avatarUpload').files[0];
+        const msgEl = document.getElementById('avatarMessage');
+        if (!file) { msgEl.innerHTML = '<span style="color:#d32f2f;">❌ اختر صورة</span>'; return; }
+        msgEl.innerHTML = '<span style="color:#0d47a1;">📤 جاري...</span>';
+        try {
+            const url = await uploadToImgBB(file);
+            const res = await callApi({ action: 'setAvatar', username: currentUser.username, avatarUrl: url });
+            if (res.success) {
+                currentUser.avatarUrl = url;
+                sessionStorage.setItem('msn_user', JSON.stringify(currentUser));
+                document.getElementById('myAvatar').innerHTML = `<img src="${url}">`;
+                msgEl.innerHTML = '<span style="color:#2e7d32;">✅ تم التحديث</span>';
+                setTimeout(() => closeModal('avatarModal'), 1000);
+            } else throw new Error();
+        } catch(e) { msgEl.innerHTML = '<span style="color:#d32f2f;">❌ فشل الرفع</span>'; }
+    }
+
+    async function confirmAddFriend() {
+        const accountId = document.getElementById('friendAccountInput').value.trim();
+        const msgEl = document.getElementById('addFriendMessage');
+        if (!accountId) { msgEl.innerHTML = '<span style="color:#d32f2f;">❌ أدخل رقم الحساب</span>'; return; }
+        msgEl.innerHTML = '<span style="color:#0d47a1;">⏳ جاري...</span>';
+        try {
+            const res = await callApi({ action: 'addFriend', owner: currentUser.username, friend: accountId });
+            if (res.success) {
+                msgEl.innerHTML = '<span style="color:#2e7d32;">✅ تمت الإضافة بنجاح</span>';
+                await loadFriendsList();
+                setTimeout(() => closeModal('addFriendModal'), 1000);
+            } else {
+                msgEl.innerHTML = '<span style="color:#d32f2f;">❌ ' + (res.error || 'خطأ') + '</span>';
+            }
+        } catch(e) { msgEl.innerHTML = '<span style="color:#d32f2f;">❌ خطأ في الاتصال</span>'; }
+    }
+
+    function toggleEmojiPanel() {
+        const panel = document.getElementById('emojiPanel');
+        if (panel.style.display === 'flex') {
+            panel.style.display = 'none';
+        } else {
+            panel.innerHTML = '';
+            emojiList.forEach(emoji => {
+                const span = document.createElement('span');
+                span.innerHTML = emoji;
+                span.onclick = () => {
+                    const input = document.getElementById('messageInput');
+                    input.value += emoji;
+                    panel.style.display = 'none';
+                    input.focus();
+                };
+                panel.appendChild(span);
+            });
+            panel.style.display = 'flex';
+        }
+    }
+
+    function previewImage(src) {
+        document.getElementById('previewImage').src = src;
+        openModal('previewModal');
+    }
+
+    function updateMyStatus() {
+        if (!currentUser) return;
+        const newStatus = document.getElementById('statusSelect').value;
+        currentUser.status = newStatus;
+        sessionStorage.setItem('msn_user', JSON.stringify(currentUser));
+        updateStatusIcon();
+        callApi({ action: 'setStatus', username: currentUser.username, status: newStatus });
+    }
+
+    function openAvatarModal() { openModal('avatarModal'); }
+    function openAddFriendModal() { openModal('addFriendModal'); }
+
+    function handleEnterKey(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendMessage();
+        }
+        handleTypingStart();
+    }
+
+    function logout() {
+        if (messageInterval) clearInterval(messageInterval);
+        if (friendsInterval) clearInterval(friendsInterval);
+        currentUser = null;
+        sessionStorage.removeItem('msn_user');
+        showLoginScreen();
+        document.getElementById('loginUser').value = '';
+        document.getElementById('loginPass').value = '';
+        document.getElementById('loginMessage').innerHTML = '';
+    }
+
+    window.onload = () => {
+        const saved = sessionStorage.getItem('msn_user');
+        if (saved) {
+            currentUser = JSON.parse(saved);
+            showContactsScreen();
+            requestNotificationPermission();
+        }
+        document.getElementById('loginButton').onclick = doLogin;
+        document.getElementById('signupButton').onclick = doSignup;
+        document.getElementById('loginUser').addEventListener('keypress', (e) => { if(e.key === 'Enter') doLogin(); });
+        document.getElementById('loginPass').addEventListener('keypress', (e) => { if(e.key === 'Enter') doLogin(); });
+        document.getElementById('signupUsername').addEventListener('keypress', (e) => { if(e.key === 'Enter') doSignup(); });
+        document.getElementById('signupDisplayName').addEventListener('keypress', (e) => { if(e.key === 'Enter') doSignup(); });
+        document.getElementById('signupPhone').addEventListener('keypress', (e) => { if(e.key === 'Enter') doSignup(); });
+        document.getElementById('signupPassword').addEventListener('keypress', (e) => { if(e.key === 'Enter') doSignup(); });
+    };
+</script>
+</body>
+</html>
