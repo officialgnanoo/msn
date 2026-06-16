@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MSN Messenger</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Tahoma, Arial, sans-serif;
+    background: linear-gradient(135deg, #a9d4ff 0%, #6e9ec9 100%);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ---------- Window frame ---------- */
+  .window {
+    width: 380px;
+    background: #ece9f1;
+    border: 1px solid #1b5fa8;
+    border-radius: 6px 6px 0 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+    overflow: hidden;
+  }
+  .titlebar {
+    background: linear-gradient(180deg, #4f9eea 0%, #1b5fa8 100%);
+    color: #fff;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .titlebar .dots span {
+    display: inline-block;
+    width: 10px; height: 10px;
+    background: #fff; opacity: 0.5;
+    border-radius: 2px;
+    margin-right: 4px;
+  }
+
+  /* ---------- Login / Signup screens ---------- */
+  .login-body {
+    padding: 26px 24px;
+    text-align: center;
+  }
+  .login-body h2 {
+    color: #1b5fa8;
+    font-size: 19px;
+    margin-bottom: 4px;
+  }
+  .login-body p {
+    color: #555;
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+  .field {
+    margin-bottom: 10px;
+    text-align: right;
+  }
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: #333;
+    margin-bottom: 4px;
+  }
+  .field input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #9fb6ce;
+    border-radius: 3px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .field input:focus { outline: 2px solid #4f9eea; }
+  .field input.readonly-field {
+    background: #eef2f7;
+    color: #1b5fa8;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+  .btn {
+    width: 100%;
+    padding: 9px;
+    margin-top: 6px;
+    border: none;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #6cc24a 0%, #4a9c2d 100%);
+    color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .btn:active { filter: brightness(0.95); }
+  .error-msg {
+    color: #c0392b;
+    font-size: 12px;
+    margin-top: 8px;
+    min-height: 16px;
+  }
+  .switch-link {
+    font-size: 12px;
+    color: #555;
+    margin-top: 14px;
+  }
+  .switch-link a {
+    color: #1b5fa8;
+    font-weight: bold;
+    text-decoration: none;
+  }
+  .switch-link a:hover { text-decoration: underline; }
+  .username-display {
+    background: #eaf3fc;
+    border: 2px dashed #4f9eea;
+    border-radius: 6px;
+    padding: 14px;
+    font-size: 22px;
+    font-weight: bold;
+    color: #1b5fa8;
+    letter-spacing: 1px;
+    margin: 14px 0;
+  }
+
+  /* ---------- Contact list ---------- */
+  .contacts-body { display: none; flex-direction: column; height: 500px; }
+  .me-bar {
+    background: #fff;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #d6e1ef;
+  }
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 4px;
+    background: linear-gradient(135deg,#6cc24a,#4a9c2d);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold;
+    margin-left: 8px;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .avatar.clickable { cursor: pointer; }
+  .status-dot {
+    position: absolute;
+    bottom: -2px; left: -2px;
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+  }
+  .status-dot.online { background: #4ad24a; }
+  .status-dot.busy { background: #e0b400; }
+  .status-dot.offline { background: #999; }
+
+  .me-info { flex: 1; }
+  .me-info .name { font-weight: bold; font-size: 13px; color: #1b5fa8; }
+  .me-info .account-id-row {
+    font-size: 11px;
+    color: #4a9c2d;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .copy-btn {
+    background: #e0e6ee;
+    border: none;
+    border-radius: 3px;
+    font-size: 10px;
+    padding: 1px 5px;
+    cursor: pointer;
+    color: #1b5fa8;
+  }
+  .copy-btn:active { background: #c9d4e2; }
+  .my-status-select {
+    font-size: 11px;
+    border: 1px solid #c9d4e2;
+    border-radius: 3px;
+    padding: 1px 3px;
+    background: #fff;
+    margin-top: 2px;
+  }
+  .logout-btn {
+    font-size: 11px;
+    color: #1b5fa8;
+    cursor: pointer;
+    text-decoration: underline;
+    background: none; border: none;
+  }
+  .group-label {
+    background: #dceaf7;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #1b5fa8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .request-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    background: #fffaf0;
+    border-bottom: 1px solid #f0e6cc;
+  }
+  .request-item .avatar { width: 30px; height: 30px; font-size: 12px; }
+  .request-item .info { flex: 1; min-width: 0; }
+  .request-item .name { font-size: 13px; font-weight: bold; color: #222; }
+  .request-actions { display: flex; gap: 4px; }
+  .request-actions button {
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .request-actions .accept-btn { background: #4a9c2d; color: #fff; }
+  .request-actions .reject-btn { background: #e0e6ee; color: #555; }
+  .add-friend-btn {
+    background: #4f9eea;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    font-size: 11px;
+    padding: 3px 8px;
+    cursor: pointer;
+  }
+  .contact-list { flex: 1; overflow-y: auto; background: #fff; }
+  .contact-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f3f8;
+    position: relative;
+  }
+  .contact-item:hover { background: #eaf3fc; }
+  .contact-item .avatar { width: 32px; height: 32px; font-size: 13px; }
+  .contact-item .info { flex: 1; min-width: 0; }
+  .contact-item .name { font-size: 13px; color: #222; font-weight: bold; }
+  .contact-item .sub {
+    font-size: 11px;
+    color: #888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .contact-item .sub.typing { color: #4a9c2d; font-style: italic; }
+  .unread-badge {
+    background: #e0392b;
+    color: #fff;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 10px;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    margin-right: 6px;
+  }
+  .empty-hint {
+    text-align: center;
+    color: #999;
+    font-size: 12px;
+    padding: 30px 10px;
+    line-height: 1.6;
+  }
+
+  /* ---------- Chat window ---------- */
+  .chat-body { display: none; flex-direction: column; height: 500px; }
+  .chat-header {
+    background: #fff;
+    padding: 8px 12px;
+    border-bottom: 1px solid #d6e1ef;
+    display: flex;
+    align-items: center;
+  }
+  .chat-header .back-btn {
+    background: none; border: none;
+    color: #1b5fa8;
+    font-size: 18px;
+    cursor: pointer;
+    margin-left: 8px;
+  }
+  .chat-header .info { flex: 1; }
+  .chat-header .name { font-size: 14px; font-weight: bold; color: #1b5fa8; }
+  .chat-header .status-text { font-size: 11px; color: #888; }
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    background: #fff;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .msg-row { display: flex; }
+  .msg-row.me { justify-content: flex-start; }
+  .msg-row.them { justify-content: flex-end; }
+  .bubble {
+    max-width: 75%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.4;
+    word-wrap: break-word;
+  }
+  .msg-row.me .bubble {
+    background: #dcf2c1;
+    border: 1px solid #b6dd8e;
+    border-bottom-left-radius: 2px;
+  }
+  .msg-row.them .bubble {
+    background: #eaf3fc;
+    border: 1px solid #c9e0f7;
+    border-bottom-right-radius: 2px;
+  }
+  .bubble .meta {
+    font-size: 10px;
+    color: #999;
+    margin-top: 3px;
+    text-align: left;
+  }
+  .bubble img.chat-image {
+    max-width: 100%;
+    border-radius: 8px;
+    display: block;
+    cursor: pointer;
+  }
+
+  /* ---------- Typing indicator ---------- */
+  .typing-indicator-row {
+    display: none;
+    padding: 0 12px 6px;
+    font-size: 11px;
+    color: #4a9c2d;
+    font-style: italic;
+  }
+  .typing-indicator-row.show { display: block; }
+  .typing-dots span {
+    display: inline-block;
+    width: 5px; height: 5px;
+    background: #4a9c2d;
+    border-radius: 50%;
+    margin: 0 1px;
+    animation: typingBounce 1.2s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-3px); opacity: 1; }
+  }
+
+  /* ---------- Input bar ---------- */
+  .input-bar {
+    display: flex;
+    border-top: 1px solid #d6e1ef;
+    background: #f5f8fc;
+    padding: 8px;
+    gap: 6px;
+    position: relative;
+  }
+  .input-bar input {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid #9fb6ce;
+    border-radius: 14px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .input-bar input:focus { outline: none; border-color: #4f9eea; }
+  .input-bar button.send-btn {
+    background: linear-gradient(180deg, #6cc24a 0%, #4a9c2d 100%);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .icon-btn {
+    background: #e0e6ee;
+    border: none;
+    border-radius: 14px;
+    width: 36px;
+    font-size: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .uploading-indicator {
+    text-align: center;
+    font-size: 11px;
+    color: #999;
+    padding: 4px;
+  }
+
+  /* ---------- Emoji picker ---------- */
+  .emoji-picker {
+    display: none;
+    position: absolute;
+    bottom: 48px;
+    right: 8px;
+    width: 260px;
+    max-height: 180px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #c9d4e2;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    padding: 6px;
+    flex-wrap: wrap;
+    gap: 2px;
+    z-index: 20;
+  }
+  .emoji-picker.show { display: flex; }
+  .emoji-picker span {
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    line-height: 1;
+  }
+  .emoji-picker span:hover { background: #eaf3fc; }
+
+  /* ---------- Modal ---------- */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: #fff;
+    border-radius: 6px;
+    width: 280px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .modal-box h3 {
+    color: #1b5fa8;
+    font-size: 15px;
+    margin-bottom: 14px;
+  }
+  .modal-box input, .modal-box select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #9fb6ce;
+    border-radius: 3px;
+    font-size: 13px;
+    margin-bottom: 10px;
+    font-family: inherit;
+  }
+  .modal-actions { display: flex; gap: 8px; }
+  .modal-actions button {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .modal-actions .confirm-btn {
+    background: linear-gradient(180deg, #6cc24a 0%, #4a9c2d 100%);
+    color: #fff;
+  }
+  .modal-actions .cancel-btn {
+    background: #e0e6ee;
+    color: #333;
+  }
+  .modal-msg {
+    font-size: 12px;
+    margin-top: 8px;
+    min-height: 16px;
+  }
+  .modal-msg.error { color: #c0392b; }
+  .modal-msg.success { color: #4a9c2d; }
+
+  .loading {
+    text-align: center;
+    color: #999;
+    font-size: 12px;
+    padding: 30px 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="window">
+
+  <!-- Title bar -->
+  <div class="titlebar">
+    <span id="titleText">MSN Messenger</span>
+    <span class="dots"><span></span><span></span><span></span></span>
+  </div>
+
+  <!-- Login Screen -->
+  <div class="login-body" id="loginScreen">
+    <h2>تسجيل الدخول</h2>
+    <p>أدخل بياناتك للدخول إلى المحادثة</p>
+    <div class="field">
+      <label>اسم المستخدم</label>
+      <input type="text" id="loginUser" placeholder="اسم المستخدم">
+    </div>
+    <div class="field">
+      <label>كلمة المرور</label>
+      <input type="password" id="loginPass" placeholder="كلمة المرور">
+    </div>
+    <button class="btn" id="loginBtn" onclick="doLogin()">دخول</button>
+    <div class="error-msg" id="loginError"></div>
+    <div class="switch-link">ليس لديك حساب؟ <a href="#" onclick="showSignup(); return false;">سجل الآن</a></div>
+  </div>
+
+  <!-- Signup Screen -->
+  <div class="login-body" id="signupScreen" style="display:none;">
+    <h2>حساب جديد</h2>
+    <p>سيتم إعطاؤك رقم حساب تلقائياً للإضافة</p>
+    <div class="field">
+      <label>اسم المستخدم (لتسجيل الدخول)</label>
+      <input type="text" id="signupUsername" placeholder="اختر اسم مستخدم">
+    </div>
+    <div class="field">
+      <label>الاسم داخل التطبيق</label>
+      <input type="text" id="signupName" placeholder="مثال: محمد">
+    </div>
+    <div class="field">
+      <label>كلمة المرور</label>
+      <input type="password" id="signupPass" placeholder="اختر كلمة مرور">
+    </div>
+    <div class="field">
+      <label>تأكيد كلمة المرور</label>
+      <input type="password" id="signupPassConfirm" placeholder="أعد كتابة كلمة المرور">
+    </div>
+    <div class="field">
+      <label>رقم الهاتف</label>
+      <input type="tel" id="signupPhone" placeholder="01xxxxxxxxx">
+    </div>
+    <div class="field">
+      <label>رقم الحساب (تلقائي)</label>
+      <input type="text" class="readonly-field" id="signupAccountPreview" value="سيظهر بعد الإنشاء" readonly>
+    </div>
+    <button class="btn" id="signupBtn" onclick="doSignup()">إنشاء الحساب</button>
+    <div class="error-msg" id="signupError"></div>
+    <div class="switch-link">لديك حساب بالفعل؟ <a href="#" onclick="showLogin(); return false;">سجل الدخول</a></div>
+  </div>
+
+  <!-- Signup Success Screen -->
+  <div class="login-body" id="signupSuccessScreen" style="display:none;">
+    <h2>تم التسجيل بنجاح! ⏳</h2>
+    <p>هذا رقم حسابك، احفظه جيداً</p>
+    <div class="username-display" id="newAccountIdDisplay">msn1</div>
+    <p style="color:#c0392b; font-weight:bold; font-size:12px;">حسابك قيد المراجعة، انتظر التفعيل من الإدارة قبل تسجيل الدخول</p>
+    <button class="btn" onclick="showLogin()">رجوع لتسجيل الدخول</button>
+  </div>
+
+  <!-- Contacts Screen -->
+  <div class="contacts-body" id="contactsScreen">
+    <div class="me-bar">
+      <div class="avatar clickable" id="meAvatar" onclick="openAvatarPicker()">A</div>
+      <div class="me-info">
+        <div class="name" id="meName">-</div>
+        <div class="account-id-row">
+          <span id="meAccountId">msn0</span>
+          <button class="copy-btn" onclick="copyAccountId()">نسخ</button>
+        </div>
+        <select class="my-status-select" id="myStatusSelect" onchange="changeMyStatus()">
+          <option value="online">🟢 متصل</option>
+          <option value="busy">🟡 مشغول</option>
+          <option value="offline">⚫ غير متصل</option>
+        </select>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">خروج</button>
+    </div>
+    <div class="group-label">
+      <span>جهات الاتصال</span>
+      <button class="add-friend-btn" onclick="openAddFriend()">+ إضافة صديق</button>
+    </div>
+    <div class="group-label" id="requestsLabel" style="display:none; background:#fff3cd; color:#8a6d00;">
+      <span>طلبات الصداقة (<span id="requestsCount">0</span>)</span>
+    </div>
+    <div id="requestsList"></div>
+    <div class="contact-list" id="contactList">
+      <div class="loading">جاري التحميل...</div>
+    </div>
+  </div>
+
+  <!-- Chat Screen -->
+  <div class="chat-body" id="chatScreen">
+    <div class="chat-header">
+      <button class="back-btn" onclick="backToContacts()">→</button>
+      <div class="avatar" id="chatHeaderAvatar" style="width:30px;height:30px;font-size:13px;">A</div>
+      <div class="info">
+        <div class="name" id="chatWithName">-</div>
+        <div class="status-text" id="chatWithStatus">غير متصل</div>
+      </div>
+    </div>
+    <div class="messages" id="messagesBox"></div>
+    <div class="typing-indicator-row" id="typingIndicatorRow">
+      <span class="typing-dots"><span></span><span></span><span></span></span>
+      يكتب الآن...
+    </div>
+    <div class="uploading-indicator" id="uploadingIndicator" style="display:none;">جاري رفع الصورة...</div>
+    <div class="input-bar">
+      <button class="icon-btn" onclick="toggleEmojiPicker()">😀</button>
+      <button class="icon-btn" onclick="document.getElementById('imageInput').click()">📷</button>
+      <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImageSelect(event)">
+      <input type="text" id="msgInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key==='Enter') sendMsg()" oninput="onTypingInput()">
+      <button class="send-btn" onclick="sendMsg()">إرسال</button>
+      <div class="emoji-picker" id="emojiPicker"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Add Friend Modal -->
+<div class="modal-overlay" id="addFriendModal">
+  <div class="modal-box">
+    <h3>إضافة صديق</h3>
+
+    <!-- Step 1: Search -->
+    <div id="addFriendStep1">
+      <input type="text" id="friendAccountInput" placeholder="اكتب رقم الحساب (مثل msn5)" oninput="resetFriendSearch()">
+      <div class="modal-actions" style="margin-top:10px;">
+        <button class="confirm-btn" onclick="searchFriendByAccountId()">بحث</button>
+        <button class="cancel-btn" onclick="closeModal('addFriendModal')">إلغاء</button>
+      </div>
+      <div class="modal-msg" id="addFriendMsg"></div>
+    </div>
+
+    <!-- Step 2: Preview + Confirm -->
+    <div id="addFriendStep2" style="display:none;">
+      <div style="display:flex; align-items:center; gap:10px; background:#eaf3fc; border-radius:8px; padding:12px; margin-bottom:12px;">
+        <div class="avatar" id="friendPreviewAvatar" style="width:44px;height:44px;font-size:18px;flex-shrink:0;"></div>
+        <div>
+          <div id="friendPreviewName" style="font-weight:bold; font-size:15px; color:#1b5fa8;"></div>
+          <div id="friendPreviewAccountId" style="font-size:11px; color:#888;"></div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="confirm-btn" onclick="confirmAddFriend()">إرسال الطلب</button>
+        <button class="cancel-btn" onclick="backToFriendSearch()">رجوع</button>
+      </div>
+      <div class="modal-msg" id="addFriendMsg2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Avatar Upload Modal -->
+<div class="modal-overlay" id="avatarModal">
+  <div class="modal-box">
+    <h3>تغيير الصورة الشخصية</h3>
+    <input type="file" id="avatarInput" accept="image/*">
+    <div class="modal-actions">
+      <button class="confirm-btn" onclick="confirmAvatarUpload()">رفع</button>
+      <button class="cancel-btn" onclick="closeModal('avatarModal')">إلغاء</button>
+    </div>
+    <div class="modal-msg" id="avatarMsg"></div>
+  </div>
+</div>
+
+<!-- Image preview modal -->
+<div class="modal-overlay" id="imagePreviewModal" onclick="closeModal('imagePreviewModal')">
+  <img id="imagePreviewSrc" style="max-width:90%; max-height:90%; border-radius:8px;">
+</div>
+
+<script>
+// ===================== CONFIG =====================
+const API_URL = "https://script.google.com/macros/s/AKfycbxwd_I157W-D3yOVfN18EyHPlnGwNR0YxUNqJy--_GuoF8BjWYlEkFx8B26ExCkVnRZ/exec";
+const IMGBB_API_KEY = "70da390a22af7d2bb175bb823a671cd4";
+const POLL_INTERVAL_MS = 2000;        // messages polling
+const STATUS_POLL_INTERVAL_MS = 3000; // status/typing polling
+const TYPING_TIMEOUT_MS = 2500;       // stop "typing" after no input
+// ===================================================
+
+const EMOJI_LIST = ["😀","😁","😂","🤣","😊","😍","😘","😜","🤔","😎","😢","😭","😡","😱","👍","👎","🙏","👏","❤️","💔","🔥","🎉","✨","💯","😴","🤗","😇","🥳","😏","🙄","😅","🤩","😋","🤤","😷","🤒","💪","👋","✌️","🤝"];
+
+let currentUser = null;        // { username, displayName, avatarUrl, accountId }
+let currentChatWith = null;    // { username, displayName, avatarUrl, accountId }
+let messagesPollInterval = null;
+let statusPollInterval = null;
+let lastTimestamp = 0;
+let typingTimeout = null;
+let isCurrentlyTyping = false;
+let friendsCache = [];         // last loaded friends list (for unread/last-message info)
+let lastMessagePreview = {};   // username -> { text, unread }
+let knownMessageIds = new Set();
+
+// ---- Helper: call API ----
+async function api(params) {
+  const url = new URL(API_URL);
+  Object.keys(params).forEach(k => {
+    if (params[k] !== undefined && params[k] !== null) url.searchParams.append(k, params[k]);
+  });
+  const res = await fetch(url);
+  return res.json();
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function genClientId() {
+  return 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+}
+
+// ==================== AUTH ====================
+
+async function doLogin() {
+  const username = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value.trim();
+  const errorBox = document.getElementById('loginError');
+  errorBox.textContent = '';
+
+  if (!username || !password) {
+    errorBox.textContent = 'من فضلك ادخل اسم المستخدم وكلمة المرور';
+    return;
+  }
+
+  document.getElementById('loginBtn').textContent = 'جاري الدخول...';
+
+  try {
+    const result = await api({ action: 'login', username, password });
+    if (result.success) {
+      currentUser = {
+        username: result.username,
+        displayName: result.displayName,
+        avatarUrl: result.avatarUrl || '',
+        accountId: result.accountId || ''
+      };
+      sessionStorage.setItem('msn_user', JSON.stringify(currentUser));
+      showContacts();
+    } else {
+      errorBox.textContent = result.error || 'بيانات غير صحيحة';
+    }
+  } catch (e) {
+    errorBox.textContent = 'حدث خطأ، حاول مرة أخرى';
+  }
+  document.getElementById('loginBtn').textContent = 'دخول';
+}
+
+function showSignup() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('signupScreen').style.display = 'block';
+  document.getElementById('signupSuccessScreen').style.display = 'none';
+}
+function showLogin() {
+  document.getElementById('signupScreen').style.display = 'none';
+  document.getElementById('signupSuccessScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'block';
+}
+
+async function doSignup() {
+  const username = document.getElementById('signupUsername').value.trim();
+  const displayName = document.getElementById('signupName').value.trim();
+  const password = document.getElementById('signupPass').value.trim();
+  const passwordConfirm = document.getElementById('signupPassConfirm').value.trim();
+  const phone = document.getElementById('signupPhone').value.trim();
+  const errorBox = document.getElementById('signupError');
+  errorBox.textContent = '';
+
+  if (!username || !displayName || !password || !passwordConfirm || !phone) {
+    errorBox.textContent = 'من فضلك ادخل كل البيانات';
+    return;
+  }
+  if (password !== passwordConfirm) {
+    errorBox.textContent = 'كلمة المرور وتأكيدها غير متطابقين';
+    return;
+  }
+
+  document.getElementById('signupBtn').textContent = 'جاري الإنشاء...';
+
+  try {
+    const result = await api({ action: 'register', username, password, displayName, phone });
+    if (result.success) {
+      document.getElementById('signupScreen').style.display = 'none';
+      document.getElementById('signupSuccessScreen').style.display = 'block';
+      document.getElementById('newAccountIdDisplay').textContent = result.accountId;
+    } else {
+      errorBox.textContent = result.error || 'حدث خطأ';
+    }
+  } catch (e) {
+    errorBox.textContent = 'حدث خطأ، حاول مرة أخرى';
+  }
+  document.getElementById('signupBtn').textContent = 'إنشاء الحساب';
+}
+
+function doLogout() {
+  // best-effort mark offline
+  if (currentUser) {
+    api({ action: 'updateStatus', username: currentUser.username, status: 'offline', typingWith: '' }).catch(()=>{});
+  }
+  currentUser = null;
+  sessionStorage.removeItem('msn_user');
+  stopMessagesPolling();
+  stopStatusPolling();
+  stopRequestsPolling();
+  document.getElementById('loginScreen').style.display = 'block';
+  document.getElementById('signupScreen').style.display = 'none';
+  document.getElementById('signupSuccessScreen').style.display = 'none';
+  document.getElementById('contactsScreen').style.display = 'none';
+  document.getElementById('chatScreen').style.display = 'none';
+  document.getElementById('titleText').textContent = 'MSN Messenger';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+// ==================== AVATAR ====================
+
+function renderAvatar(el, user) {
+  if (user && user.avatarUrl) {
+    el.innerHTML = `<img src="${user.avatarUrl}" alt="avatar">`;
+  } else {
+    el.innerHTML = '';
+    el.textContent = (user && user.displayName ? user.displayName : '?').charAt(0).toUpperCase();
+  }
+}
+
+function openAvatarPicker() {
+  document.getElementById('avatarInput').value = '';
+  document.getElementById('avatarMsg').textContent = '';
+  document.getElementById('avatarMsg').className = 'modal-msg';
+  openModal('avatarModal');
+}
+
+async function confirmAvatarUpload() {
+  const fileInput = document.getElementById('avatarInput');
+  const msgEl = document.getElementById('avatarMsg');
+  msgEl.className = 'modal-msg';
+
+  if (!fileInput.files || !fileInput.files[0]) {
+    msgEl.className = 'modal-msg error';
+    msgEl.textContent = 'اختر صورة أولاً';
+    return;
+  }
+
+  msgEl.textContent = 'جاري الرفع...';
+
+  try {
+    const url = await uploadToImgbb(fileInput.files[0]);
+    const result = await api({ action: 'setAvatar', username: currentUser.username, avatarUrl: url });
+    if (result.success) {
+      currentUser.avatarUrl = url;
+      sessionStorage.setItem('msn_user', JSON.stringify(currentUser));
+      renderAvatar(document.getElementById('meAvatar'), currentUser);
+      msgEl.className = 'modal-msg success';
+      msgEl.textContent = 'تم التحديث بنجاح!';
+      setTimeout(() => closeModal('avatarModal'), 1000);
+    } else {
+      msgEl.className = 'modal-msg error';
+      msgEl.textContent = result.error || 'حدث خطأ';
+    }
+  } catch (e) {
+    msgEl.className = 'modal-msg error';
+    msgEl.textContent = 'فشل رفع الصورة';
+  }
+}
+
+async function uploadToImgbb(file) {
+  const formData = new FormData();
+  formData.append('image', file);
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
+  const data = await res.json();
+  if (data.success) return data.data.url;
+  throw new Error('imgbb upload failed');
+}
+
+// ==================== ACCOUNT ID COPY ====================
+
+function copyAccountId() {
+  const text = currentUser.accountId;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    const old = btn.textContent;
+    btn.textContent = 'تم!';
+    setTimeout(() => { btn.textContent = old; }, 1200);
+  }).catch(() => {
+    alert('رقم حسابك: ' + text);
+  });
+}
+
+// ==================== CONTACTS / FRIENDS ====================
+
+async function showContacts() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('chatScreen').style.display = 'none';
+  document.getElementById('contactsScreen').style.display = 'flex';
+  document.getElementById('titleText').textContent = 'MSN - ' + currentUser.displayName;
+
+  document.getElementById('meName').textContent = currentUser.displayName;
+  document.getElementById('meAccountId').textContent = currentUser.accountId;
+  renderAvatar(document.getElementById('meAvatar'), currentUser);
+
+  await loadFriends();
+  await loadFriendRequests();
+  startStatusPolling();
+  startRequestsPolling();
+
+  // heartbeat: mark online immediately
+  api({ action: 'updateStatus', username: currentUser.username, status: 'online', typingWith: '' }).catch(()=>{});
+}
+
+async function loadFriends() {
+  const listEl = document.getElementById('contactList');
+  listEl.innerHTML = '<div class="loading">جاري التحميل...</div>';
+
+  try {
+    const result = await api({ action: 'getFriends', owner: currentUser.username });
+    if (result.success && result.friends.length > 0) {
+      friendsCache = result.friends;
+      await loadMessagePreviews();
+      renderContactList(lastStatusMap);
+    } else {
+      friendsCache = [];
+      listEl.innerHTML = '<div class="empty-hint">لا يوجد أصحاب مضافين بعد<br>اضغط "+ إضافة صديق" لإضافة أحد برقم حسابه</div>';
+    }
+  } catch (e) {
+    listEl.innerHTML = '<div class="empty-hint">خطأ في تحميل القائمة</div>';
+  }
+}
+
+async function loadMessagePreviews() {
+  const promises = friendsCache.map(async (friend) => {
+    try {
+      const result = await api({
+        action: 'getMessages',
+        user1: currentUser.username,
+        user2: friend.username,
+        after: 0
+      });
+      if (result.success && result.messages.length > 0) {
+        const msgs = result.messages;
+        const lastMsg = msgs[msgs.length - 1];
+        const prevLastReadTs = lastMessagePreview[friend.username]?.lastReadTs || 0;
+        const unread = msgs.filter(m =>
+          m.from === friend.username &&
+          m.timestamp > prevLastReadTs
+        ).length;
+        lastMessagePreview[friend.username] = {
+          text: lastMsg.type === 'image' ? '📷 صورة' : lastMsg.message,
+          unread: (currentChatWith && currentChatWith.username === friend.username) ? 0 : unread,
+          lastReadTs: (currentChatWith && currentChatWith.username === friend.username)
+            ? Date.now()
+            : prevLastReadTs
+        };
+      }
+    } catch (e) {
+      // silent
+    }
+  });
+  await Promise.all(promises);
+}
+
+let friendRequestsCache = [];
+
+async function loadFriendRequests() {
+  try {
+    const result = await api({ action: 'getFriendRequests', owner: currentUser.username });
+    if (result.success) {
+      friendRequestsCache = result.requests || [];
+      renderFriendRequests();
+    }
+  } catch (e) {
+    // silent
+  }
+}
+
+function renderFriendRequests() {
+  const label = document.getElementById('requestsLabel');
+  const countEl = document.getElementById('requestsCount');
+  const listEl = document.getElementById('requestsList');
+
+  if (!friendRequestsCache || friendRequestsCache.length === 0) {
+    label.style.display = 'none';
+    listEl.innerHTML = '';
+    return;
+  }
+
+  label.style.display = 'flex';
+  countEl.textContent = friendRequestsCache.length;
+  listEl.innerHTML = '';
+
+  friendRequestsCache.forEach(u => {
+    const div = document.createElement('div');
+    div.className = 'request-item';
+
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'avatar';
+    renderAvatar(avatarDiv, u);
+
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'info';
+    infoDiv.innerHTML = `<div class="name">${escapeHtml(u.displayName)}</div>`;
+
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'request-actions';
+    const acceptBtn = document.createElement('button');
+    acceptBtn.className = 'accept-btn';
+    acceptBtn.textContent = 'قبول';
+    acceptBtn.onclick = () => respondToRequest(u.username, true);
+    const rejectBtn = document.createElement('button');
+    rejectBtn.className = 'reject-btn';
+    rejectBtn.textContent = 'رفض';
+    rejectBtn.onclick = () => respondToRequest(u.username, false);
+    actionsDiv.appendChild(acceptBtn);
+    actionsDiv.appendChild(rejectBtn);
+
+    div.appendChild(avatarDiv);
+    div.appendChild(infoDiv);
+    div.appendChild(actionsDiv);
+    listEl.appendChild(div);
+  });
+}
+
+async function respondToRequest(fromUsername, accept) {
+  try {
+    const result = await api({ action: 'respondFriendRequest', owner: currentUser.username, fromUsername, accept: accept ? 'true' : 'false' });
+    if (result.success) {
+      await loadFriendRequests();
+      if (accept) {
+        await loadFriends();
+      }
+    }
+  } catch (e) {
+    // silent
+  }
+}
+
+let requestsPollInterval = null;
+function startRequestsPolling() {
+  stopRequestsPolling();
+  requestsPollInterval = setInterval(loadFriendRequests, STATUS_POLL_INTERVAL_MS);
+}
+function stopRequestsPolling() {
+  if (requestsPollInterval) clearInterval(requestsPollInterval);
+  requestsPollInterval = null;
+}
+
+function renderContactList(statusMap) {
+  const listEl = document.getElementById('contactList');
+  if (!friendsCache || friendsCache.length === 0) {
+    listEl.innerHTML = '<div class="empty-hint">لا يوجد أصحاب مضافين بعد<br>اضغط "+ إضافة صديق" لإضافة أحد برقم حسابه</div>';
+    return;
+  }
+
+  listEl.innerHTML = '';
+  friendsCache.forEach(u => {
+    const div = document.createElement('div');
+    div.className = 'contact-item';
+    div.onclick = () => openChat(u);
+
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'avatar';
+    renderAvatar(avatarDiv, u);
+
+    const st = statusMap && statusMap[u.username];
+    const statusDot = document.createElement('div');
+    statusDot.className = 'status-dot ' + (st ? st.status : 'offline');
+    avatarDiv.appendChild(statusDot);
+
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'info';
+    const preview = lastMessagePreview[u.username];
+    let subText = 'اضغط للمحادثة';
+    let subClass = 'sub';
+    if (st && st.typingToMe) {
+      subText = 'يكتب الآن...';
+      subClass = 'sub typing';
+    } else if (preview && preview.text) {
+      subText = preview.text;
+    }
+    infoDiv.innerHTML = `<div class="name">${escapeHtml(u.displayName)}</div><div class="${subClass}">${escapeHtml(subText)}</div>`;
+
+    div.appendChild(avatarDiv);
+    div.appendChild(infoDiv);
+
+    if (preview && preview.unread > 0) {
+      const badge = document.createElement('div');
+      badge.className = 'unread-badge';
+      badge.textContent = preview.unread > 9 ? '9+' : preview.unread;
+      div.appendChild(badge);
+    }
+
+    listEl.appendChild(div);
+  });
+}
+
+let foundFriendData = null; // يخزن بيانات الشخص اللي اتبحث عنه
+
+function openAddFriend() {
+  document.getElementById('friendAccountInput').value = '';
+  document.getElementById('addFriendMsg').textContent = '';
+  document.getElementById('addFriendMsg').className = 'modal-msg';
+  document.getElementById('addFriendStep1').style.display = 'block';
+  document.getElementById('addFriendStep2').style.display = 'none';
+  foundFriendData = null;
+  openModal('addFriendModal');
+}
+
+function resetFriendSearch() {
+  document.getElementById('addFriendMsg').textContent = '';
+  document.getElementById('addFriendMsg').className = 'modal-msg';
+}
+
+function backToFriendSearch() {
+  document.getElementById('addFriendStep1').style.display = 'block';
+  document.getElementById('addFriendStep2').style.display = 'none';
+  document.getElementById('addFriendMsg2').textContent = '';
+  foundFriendData = null;
+}
+
+async function searchFriendByAccountId() {
+  const friendAccountId = document.getElementById('friendAccountInput').value.trim();
+  const msgEl = document.getElementById('addFriendMsg');
+  msgEl.className = 'modal-msg';
+  msgEl.textContent = '';
+
+  if (!friendAccountId) {
+    msgEl.className = 'modal-msg error';
+    msgEl.textContent = 'اكتب رقم الحساب';
+    return;
+  }
+
+  msgEl.textContent = 'جاري البحث...';
+
+  try {
+    const result = await api({ action: 'getFriendInfo', accountId: friendAccountId, requester: currentUser.username });
+
+    if (result.success && result.user) {
+      const u = result.user;
+      foundFriendData = u;
+      msgEl.textContent = '';
+
+      // عرض البطاقة
+      const avatarEl = document.getElementById('friendPreviewAvatar');
+      renderAvatar(avatarEl, u);
+      document.getElementById('friendPreviewName').textContent = u.displayName;
+      document.getElementById('friendPreviewAccountId').textContent = u.accountId;
+      document.getElementById('addFriendMsg2').textContent = '';
+      document.getElementById('addFriendMsg2').className = 'modal-msg';
+
+      document.getElementById('addFriendStep1').style.display = 'none';
+      document.getElementById('addFriendStep2').style.display = 'block';
+    } else {
+      msgEl.className = 'modal-msg error';
+      msgEl.textContent = result.error || 'رقم الحساب غير موجود';
+    }
+  } catch (e) {
+    msgEl.className = 'modal-msg error';
+    msgEl.textContent = 'حدث خطأ في الاتصال';
+  }
+}
+
+async function confirmAddFriend() {
+  // هذه الفنكشن بتتنادى من Step 2 (بعد البحث)
+  if (!foundFriendData) return;
+  const msgEl = document.getElementById('addFriendMsg2');
+  msgEl.className = 'modal-msg';
+  msgEl.textContent = 'جاري الإرسال...';
+
+  try {
+    const result = await api({ action: 'addFriend', owner: currentUser.username, friendAccountId: foundFriendData.accountId });
+    if (result.success) {
+      msgEl.className = 'modal-msg success';
+      if (result.autoAccepted) {
+        msgEl.textContent = 'تمت الإضافة تلقائياً! (كان عنده طلب لك)';
+        await loadFriends();
+      } else {
+        msgEl.textContent = 'تم إرسال الطلب، في انتظار الموافقة ✓';
+      }
+      setTimeout(() => closeModal('addFriendModal'), 1500);
+    } else {
+      msgEl.className = 'modal-msg error';
+      msgEl.textContent = result.error || 'حدث خطأ';
+    }
+  } catch (e) {
+    msgEl.className = 'modal-msg error';
+    msgEl.textContent = 'حدث خطأ في الاتصال';
+  }
+}
+
+// ==================== CHAT ====================
+
+function openChat(user) {
+  currentChatWith = user;
+  lastTimestamp = 0;
+  knownMessageIds = new Set();
+
+  if (lastMessagePreview[user.username]) {
+    lastMessagePreview[user.username].unread = 0;
+    lastMessagePreview[user.username].lastReadTs = Date.now();
+  } else {
+    lastMessagePreview[user.username] = { text: '', unread: 0, lastReadTs: Date.now() };
+  }
+
+  document.getElementById('contactsScreen').style.display = 'none';
+  document.getElementById('chatScreen').style.display = 'flex';
+  document.getElementById('chatWithName').textContent = user.displayName;
+  document.getElementById('messagesBox').innerHTML = '';
+  document.getElementById('titleText').textContent = 'محادثة مع ' + user.displayName;
+  renderAvatar(document.getElementById('chatHeaderAvatar'), user);
+  hideTypingIndicator();
+  closeEmojiPicker();
+
+  loadMessages(true);
+  startMessagesPolling();
+}
+
+function backToContacts() {
+  stopMessagesPolling();
+  document.getElementById('chatScreen').style.display = 'none';
+  document.getElementById('contactsScreen').style.display = 'flex';
+  document.getElementById('titleText').textContent = 'MSN - ' + currentUser.displayName;
+  currentChatWith = null;
+  clearTypingState();
+  renderContactList(lastStatusMap);
+}
+
+async function loadMessages(isInitial) {
+  if (!currentChatWith) return;
+  try {
+    const result = await api({
+      action: 'getMessages',
+      user1: currentUser.username,
+      user2: currentChatWith.username,
+      after: lastTimestamp
+    });
+    if (result.success && result.messages.length > 0) {
+      const box = document.getElementById('messagesBox');
+      result.messages.forEach(m => {
+        const key = m.id + '_' + m.timestamp;
+        if (knownMessageIds.has(key)) return;
+        knownMessageIds.add(key);
+        appendMessage(m);
+        if (m.timestamp > lastTimestamp) lastTimestamp = m.timestamp;
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+  } catch (e) {
+    // silent fail on polling
+  }
+}
+
+function appendMessage(m) {
+  const box = document.getElementById('messagesBox');
+  const isMe = m.from === currentUser.username;
+  const row = document.createElement('div');
+  row.className = 'msg-row ' + (isMe ? 'me' : 'them');
+
+  const time = new Date(m.timestamp);
+  const timeStr = time.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+
+  if (m.type === 'image') {
+    row.innerHTML = `<div class="bubble"><img class="chat-image" src="${m.message}" onclick="previewImage('${m.message}')"><div class="meta">${timeStr}</div></div>`;
+  } else {
+    row.innerHTML = `<div class="bubble">${escapeHtml(m.message)}<div class="meta">${timeStr}</div></div>`;
+  }
+  box.appendChild(row);
+}
+
+function previewImage(src) {
+  document.getElementById('imagePreviewSrc').src = src;
+  document.getElementById('imagePreviewModal').classList.add('show');
+}
+
+async function sendMsg() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text || !currentChatWith) return;
+
+  input.value = '';
+  clearTypingState();
+
+  const clientId = genClientId();
+  const tempTimestamp = Date.now();
+  const key = '_pending_' + clientId;
+  knownMessageIds.add(key);
+
+  appendMessage({ from: currentUser.username, to: currentChatWith.username, message: text, timestamp: tempTimestamp, type: 'text' });
+  const box = document.getElementById('messagesBox');
+  box.scrollTop = box.scrollHeight;
+
+  try {
+    const result = await api({
+      action: 'sendMessage',
+      from: currentUser.username,
+      to: currentChatWith.username,
+      message: text,
+      type: 'text',
+      clientId: clientId
+    });
+    if (result.success) {
+      knownMessageIds.add(result.id + '_' + result.timestamp);
+      if (result.timestamp > lastTimestamp) lastTimestamp = result.timestamp;
+    }
+  } catch (e) {
+    // could show error
+  }
+}
+
+async function handleImageSelect(event) {
+  const file = event.target.files[0];
+  if (!file || !currentChatWith) return;
+
+  const indicator = document.getElementById('uploadingIndicator');
+  indicator.style.display = 'block';
+
+  try {
+    const url = await uploadToImgbb(file);
+    const clientId = genClientId();
+    const result = await api({
+      action: 'sendMessage',
+      from: currentUser.username,
+      to: currentChatWith.username,
+      message: url,
+      type: 'image',
+      clientId: clientId
+    });
+
+    const ts = result.timestamp || Date.now();
+    knownMessageIds.add(result.id + '_' + ts);
+    appendMessage({ from: currentUser.username, to: currentChatWith.username, message: url, timestamp: ts, type: 'image' });
+    const box = document.getElementById('messagesBox');
+    box.scrollTop = box.scrollHeight;
+    if (ts > lastTimestamp) lastTimestamp = ts;
+  } catch (e) {
+    alert('فشل رفع الصورة، حاول مرة أخرى');
+  }
+
+  indicator.style.display = 'none';
+  event.target.value = '';
+}
+
+// ==================== EMOJI PICKER ====================
+
+function buildEmojiPicker() {
+  const picker = document.getElementById('emojiPicker');
+  picker.innerHTML = '';
+  EMOJI_LIST.forEach(em => {
+    const span = document.createElement('span');
+    span.textContent = em;
+    span.onclick = () => {
+      const input = document.getElementById('msgInput');
+      input.value += em;
+      input.focus();
+    };
+    picker.appendChild(span);
+  });
+}
+function toggleEmojiPicker() {
+  const picker = document.getElementById('emojiPicker');
+  if (picker.children.length === 0) buildEmojiPicker();
+  picker.classList.toggle('show');
+}
+function closeEmojiPicker() {
+  document.getElementById('emojiPicker').classList.remove('show');
+}
+
+// ==================== TYPING INDICATOR ====================
+
+function onTypingInput() {
+  if (!currentChatWith) return;
+
+  if (!isCurrentlyTyping) {
+    isCurrentlyTyping = true;
+    api({ action: 'updateStatus', username: currentUser.username, status: 'online', typingWith: currentChatWith.username }).catch(()=>{});
+  }
+
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => {
+    clearTypingState();
+  }, TYPING_TIMEOUT_MS);
+}
+
+function clearTypingState() {
+  if (isCurrentlyTyping) {
+    isCurrentlyTyping = false;
+    if (currentUser) {
+      api({ action: 'updateStatus', username: currentUser.username, status: 'online', typingWith: '' }).catch(()=>{});
+    }
+  }
+  clearTimeout(typingTimeout);
+}
+
+function showTypingIndicator() {
+  document.getElementById('typingIndicatorRow').classList.add('show');
+}
+function hideTypingIndicator() {
+  document.getElementById('typingIndicatorRow').classList.remove('show');
+}
+
+// ==================== STATUS (online/busy/offline) ====================
+
+let lastStatusMap = {};
+let myManualStatus = 'online';
+
+function changeMyStatus() {
+  myManualStatus = document.getElementById('myStatusSelect').value;
+  api({ action: 'updateStatus', username: currentUser.username, status: myManualStatus, typingWith: isCurrentlyTyping && currentChatWith ? currentChatWith.username : '' }).catch(()=>{});
+}
+
+function startStatusPolling() {
+  stopStatusPolling();
+  pollStatus();
+  statusPollInterval = setInterval(pollStatus, STATUS_POLL_INTERVAL_MS);
+}
+function stopStatusPolling() {
+  if (statusPollInterval) clearInterval(statusPollInterval);
+  statusPollInterval = null;
+}
+
+async function pollStatus() {
+  if (!currentUser) return;
+
+  // heartbeat for myself
+  api({ action: 'updateStatus', username: currentUser.username, status: myManualStatus, typingWith: isCurrentlyTyping && currentChatWith ? currentChatWith.username : '' }).catch(()=>{});
+
+  try {
+    const result = await api({ action: 'getStatus', username: currentUser.username });
+    if (result.success) {
+      lastStatusMap = result.statuses;
+
+      // update contact list dots if visible
+      if (document.getElementById('contactsScreen').style.display !== 'none') {
+        renderContactList(lastStatusMap);
+      }
+
+      // update chat header + typing indicator if in chat
+      if (currentChatWith) {
+        const st = lastStatusMap[currentChatWith.username];
+        const statusTextEl = document.getElementById('chatWithStatus');
+        if (st) {
+          const labels = { online: '🟢 متصل', busy: '🟡 مشغول', offline: '⚫ غير متصل' };
+          statusTextEl.textContent = labels[st.status] || 'غير متصل';
+          if (st.typingToMe) {
+            showTypingIndicator();
+          } else {
+            hideTypingIndicator();
+          }
+        }
+      }
+    }
+  } catch (e) {
+    // silent
+  }
+}
+
+// ==================== MESSAGE POLLING ====================
+
+function startMessagesPolling() {
+  stopMessagesPolling();
+  messagesPollInterval = setInterval(async () => {
+    await loadMessages(false);
+    if (currentChatWith) {
+      if (!lastMessagePreview[currentChatWith.username]) {
+        lastMessagePreview[currentChatWith.username] = { text: '', unread: 0, lastReadTs: Date.now() };
+      } else {
+        lastMessagePreview[currentChatWith.username].lastReadTs = Date.now();
+        lastMessagePreview[currentChatWith.username].unread = 0;
+      }
+    }
+  }, POLL_INTERVAL_MS);
+}
+function stopMessagesPolling() {
+  if (messagesPollInterval) clearInterval(messagesPollInterval);
+  messagesPollInterval = null;
+}
+
+// ==================== MODALS ====================
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+}
+
+// ==================== INIT ====================
+
+window.onload = function() {
+  const saved = sessionStorage.getItem('msn_user');
+  if (saved) {
+    currentUser = JSON.parse(saved);
+    showContacts();
+  }
+};
+
+window.addEventListener('beforeunload', function() {
+  if (currentUser) {
+    // best effort, may not always fire
+    navigator.sendBeacon && navigator.sendBeacon(API_URL + '?action=updateStatus&username=' + encodeURIComponent(currentUser.username) + '&status=offline&typingWith=');
+  }
+});
+</script>
+
+</body>
+</html>
+
